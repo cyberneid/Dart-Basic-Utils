@@ -728,6 +728,28 @@ class X509Utils {
   }
 
   ///
+  /// Parses the given bytes to a [X509CertificateData] object.
+  ///
+  /// Throws an [ASN1Exception] if the bytes could not be read by the [ASN1Parser].
+  ///
+  static X509CertificateData x509CertificateFromBytes(Uint8List bytes) {
+    var asn1Parser = ASN1Parser(bytes);
+    var topLevelSeq = asn1Parser.nextObject() as ASN1Sequence;
+
+    var x509 = _x509FromAsn1Sequence(topLevelSeq);
+
+    var sha1String = CryptoUtils.getHash(bytes, algorithmName: 'SHA-1');
+    var md5String = CryptoUtils.getHash(bytes, algorithmName: 'MD5');
+    var sha256String = CryptoUtils.getHash(bytes, algorithmName: 'SHA-256');
+
+    x509.plain = null;
+    x509.sha1Thumbprint = sha1String;
+    x509.md5Thumbprint = md5String;
+    x509.sha256Thumbprint = sha256String;
+    return x509;
+  }
+
+  ///
   /// Parses the given PEM to a [X509CertificateData] object.
   ///
   /// Throws an [ASN1Exception] if the pem could not be read by the [ASN1Parser].
